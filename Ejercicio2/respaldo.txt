@@ -1,0 +1,175 @@
+﻿Console.Clear();
+
+for (int k = 0; k < 4; k++)
+{
+    //1)    Cartón de 3 filas por 9 columnas
+    //2)    El cartón debe tener 15 números y 12 espacios en blanco
+    int filas = 3;
+    int columnas = 9;
+    string[,] carton = new string[filas, columnas];
+
+    //3)    Cada fila debe tener 5 números (4 espacios vacios!)
+    //4)    Cada columna debe tener 1 o 2 números
+    //5)    Ningún número puede repetirse
+    //6)    La primer columna contiene los números del 1 al 9, la segunda del 10 al 19, la tercera del 20 al 29,
+    //      así sucesivamente hasta la última columna la cual contiene del 80 al 90
+
+    Random rd = new Random();
+    int aux;
+
+    int limiteInferior = 1;
+    int limiteSuperior = 10;
+    int offset = 10;        //en este caso el offset lo uso para sumar los limites por ejemplo pasar de 1->10 y de 9->19 para generar los numeros ...
+
+    for (int j = 0; j <= carton.GetUpperBound(1); j++)   //COLUMNA
+    {
+        for (int i = 0; i <= carton.GetUpperBound(0); i++)   //FILA
+        {
+            aux = rd.Next(limiteInferior, limiteSuperior);
+
+            if (i==1)
+                while (aux==int.Parse(carton[i-1,j])) 
+                    aux = rd.Next(limiteInferior, limiteSuperior);
+
+            if (i == 2)
+            {
+                while (aux==int.Parse(carton[i - 1, j]) || aux == int.Parse(carton[i - 2, j]))
+                {
+                    aux = rd.Next(limiteInferior, limiteSuperior);
+                }
+            }
+            carton[i, j] = aux.ToString();
+        }
+        if (j == 7) limiteSuperior++;   //Para que el 90 pueda aparecer en el random de la ultima columna 
+        limiteInferior += offset;
+        limiteSuperior += offset;
+    }
+
+    string aux2;
+
+    //Ordeno las columnas METODO BURBUJA
+    for (int j=0; j<=carton.GetUpperBound(1); j++)  //COLUMNAS
+    {
+        for (int i=0; i<=carton.GetUpperBound(0); i++)  //FILAS
+        {
+            for (int h=0; h<carton.GetUpperBound(0); h++)
+            {
+                if (int.Parse(carton[h,j])>int.Parse(carton[h+1,j]))
+                {
+                    aux2 = carton[h, j];
+                    carton[h, j] = carton[h + 1, j];
+                    carton[h + 1, j] = aux2;
+                }
+
+            }
+        }
+    }
+
+    //Agrego los espacios en blanco
+    //Son 4 espacios vacios por fila
+    //Son 1 o 2 espacios por columna!
+    int[] aux3 = new int[4];    //para guardar la posicion de los espacios en blanco 1-9
+    
+    for (int i=0; i<carton.GetUpperBound(0); i++)  //FILA
+    {
+        //Aqui genero 4 posiciones distintas para meter espacios vacios 
+
+        for (int h=0; h<4; h++) 
+        {
+            aux3[h] = rd.Next(0,9);
+
+            for (int g = 0; g < h; g++)
+            {
+                if (aux3[g]==aux3[h])
+                {
+                    do
+                    {
+                        aux3[h] = rd.Next(0, 9);
+                        g = 0;  
+                    } while (aux3[g]==aux3[h]);
+                }
+            }
+        }
+        for (int h = 0; h < aux3.Length; h++)
+        {
+            carton[i,aux3[h]] = "  ";
+        }
+    }
+
+    //En el for anterior solo genere espacios vacios en las dos primeras filas
+    //Para la tercer fila debo tener en cuenta si no se haran 3 espacios vacios en una misma columna o ninugno
+
+    //Aqui guardo los espacios que ya esten vacios y los que no puede vaciarse para no dejar una columna en blanco!!!
+    int[] espaciosRestringidos = new int[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0}; //si tiene un 1 entonces estan ocupados
+
+
+    //Primero priorizo las columnas donde no hallan espacios vacios todavia!!
+    int contadorEspaciosVaciosFila3 = 0;
+
+
+    for(int j=0; j<=carton.GetUpperBound(1); j++)   //COLUMNAS
+    {
+        if (carton[0,j]!="  " && carton[1,j]!="  ")
+        {
+            carton[2, j] = "  ";
+            espaciosRestringidos[j] = 1;
+            contadorEspaciosVaciosFila3++;
+        }
+    }
+
+    //Si el contador de espacios vacios de la fila 3 no llego a 4 entonces tengo que generar aleatoriamente otros espacios vacios mas
+    //Tengo que tener cuidado con no generar un espacio vacio en donde ya hallan 2 en sus filas anteriores !!!
+
+    //Determino los espacios que no pueden vaciarse
+    for (int j=0; j<carton.GetUpperBound(1); j++)   //COLUMNAS
+    {
+        if (carton[0,j]=="  " && carton[1,j]=="  ")
+        {
+            espaciosRestringidos[j] = 1;
+        }
+    }
+
+    int aux5;
+    bool flag = false;
+
+    int espaciosVaciosFaltantes = 4 - contadorEspaciosVaciosFila3;
+
+    while (espaciosVaciosFaltantes > 0)
+    {
+            flag = false;
+            do
+            {
+                aux5 = rd.Next(1,10)-1;
+                if ( espaciosRestringidos[aux5]==0)
+                {
+                    carton[2, aux5] = "  ";
+                    flag = true;
+                }
+            } while (!flag);
+            espaciosVaciosFaltantes--;
+    }
+
+    //7)    Mostrar el carton por pantalla
+
+    Console.WriteLine("\t\t--- BINGO ---");
+    Console.WriteLine(" ----------------------------------------------");
+
+    for (int i = 0; i <= carton.GetUpperBound(0); i++)
+    {
+        Console.Write(" |");
+        for (int j = 0; j <= carton.GetUpperBound(1); j++)
+        {
+            if (carton[i, j]!="  ")
+            {
+                Console.Write($" {int.Parse(carton[i, j]):00} |");
+            }
+            else
+            {
+                Console.Write($" {carton[i, j]} |");
+            }
+        }
+        Console.WriteLine();
+        Console.WriteLine(" ----------------------------------------------");
+    }
+    Console.WriteLine("\n");
+}
