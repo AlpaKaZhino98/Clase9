@@ -30,7 +30,6 @@ for (int g=0; g<3; g++) // CANTIDAD DE CARTONES A MOSTRAR
                 {
                     if (carton[h, j] == aux)
                     {
-                        aux = rd.Next(limiteInferior, limiteSuperior);
                         seRepite = true;
                     }
                 }
